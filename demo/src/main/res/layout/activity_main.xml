@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_gravity="center"
+    android:gravity="center">
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/demo_card"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/colorBlue"
+        app:cardCornerRadius="15dp"
+        android:padding="10dp">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorBlack"
+            android:text="File Picker Demo!"
+            android:layout_margin="10dp"
+            android:textStyle="bold"
+            android:textSize="20sp"/>
+    </com.google.android.material.card.MaterialCardView>
+
+</LinearLayout>

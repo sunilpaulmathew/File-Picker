@@ -1,0 +1,144 @@
+<RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto" >
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" >
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/colorBlack"
+            android:gravity="center_vertical"
+            android:padding="10dp" >
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/back"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorBlack"
+                android:tint="@color/colorWhite"
+                android:layout_gravity="center|start"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_back" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:gravity="center_vertical"
+                android:layout_marginStart="50dp"
+                android:layout_marginEnd="50dp"
+                android:layout_gravity="center"
+                android:textIsSelectable="true"
+                android:textStyle="bold"
+                android:textSize="15sp"
+                android:maxLines="1" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/sort"
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:background="@color/colorBlack"
+                android:tint="@color/colorWhite"
+                android:layout_gravity="center|end"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_sort" />
+        </FrameLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_view"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/permission_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:gravity="center">
+
+        <com.google.android.material.textview.MaterialTextView
+            android:id="@+id/permission_text"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/colorWhite"
+            android:layout_marginStart="10dp"
+            android:gravity="center_vertical"
+            android:layout_marginEnd="10dp"
+            android:clickable="false"
+            android:textStyle="bold"
+            android:textSize="17sp"
+            android:padding="15dp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/grant_card"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            app:cardBackgroundColor="@color/colorBlack"
+            android:layout_margin="15dp"
+            android:layout_gravity="end"
+            app:cardCornerRadius="15dp" >
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:gravity="center"
+                android:text="@string/grant"
+                android:clickable="false"
+                android:textStyle="bold"
+                android:textSize="20sp"
+                android:padding="10dp" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/select"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardBackgroundColor="@color/colorBlack"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="50dp"
+        android:layout_marginEnd="75dp"
+        app:cardCornerRadius="15dp"
+        android:visibility="gone" >
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="10dp" >
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:layout_width="30dp"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center|start"
+                android:gravity="center_vertical"
+                android:src="@drawable/ic_select"
+                android:tint="@color/colorWhite"
+                android:background="@null"
+                android:clickable="false" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/colorWhite"
+                android:layout_marginStart="10dp"
+                android:gravity="center_vertical"
+                android:layout_marginEnd="10dp"
+                android:text="@string/select"
+                android:clickable="false"
+                android:textStyle="bold"
+                android:textSize="20sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+</RelativeLayout>

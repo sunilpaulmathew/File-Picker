@@ -1,0 +1,59 @@
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="center_vertical"
+    android:layout_margin="10dp" >
+
+        <androidx.appcompat.widget.AppCompatImageButton
+            android:id="@+id/icon"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:layout_gravity="center_vertical"
+            android:scaleType="fitCenter"
+            android:background="@null" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="40dp"
+            android:layout_marginEnd="40dp"
+            android:layout_gravity="center"
+            android:orientation="vertical"
+            android:gravity="center">
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:focusable="false"
+                    android:textStyle="bold"
+                    android:textSize="17sp" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/description"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="italic"
+                    android:focusable="false"
+                    android:visibility="gone" />
+
+                <com.google.android.material.textview.MaterialTextView
+                    android:id="@+id/size"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:textStyle="italic"
+                    android:focusable="false" />
+        </LinearLayout>
+
+        <com.google.android.material.checkbox.MaterialCheckBox
+            android:id="@+id/checkbox"
+            android:layout_width="35dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end|center"
+            android:background="@null"
+            android:visibility="gone" />
+</FrameLayout>
