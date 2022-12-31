@@ -6,11 +6,11 @@
 
 A simple Android library to pick files from device storage.
 
-## Requirements
+## Pre-requirements
 
-File Picker requires the following permissions declared in the manifest file of app:
-android.permission.WRITE_EXTERNAL_STORAGE: Build.VERSION.SDK_INT < 29
-android.permission.MANAGE_EXTERNAL_STORAGE: Build.VERSION.SDK_INT >= 29
+Declared the following permissions in the manifest file of app:
+* android.permission.WRITE_EXTERNAL_STORAGE
+* android.permission.MANAGE_EXTERNAL_STORAGE (if File Picker need to be used in Build.VERSION.SDK_INT >= 29)
 
 ## Download
 
@@ -38,7 +38,7 @@ dependencies {
 
 ```
             FilePicker filePicker = new FilePicker(
-                    filePickerResultLauncher /* in which the results handled. usage: mandatory */,
+                    activityResultLauncher /* in which the results handled. usage: mandatory */,
                     this /* your activity or context. usage: mandatory */
             );
             /*
