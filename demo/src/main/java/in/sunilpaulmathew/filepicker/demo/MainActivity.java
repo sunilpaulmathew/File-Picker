@@ -2,8 +2,9 @@ package in.sunilpaulmathew.filepicker.demo;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Environment;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 
@@ -12,7 +13,6 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 
 import java.io.File;
 
-import in.sunilpaulmathew.filepicker.activities.FilePickerActivity;
 import in.sunilpaulmathew.filepicker.utils.FilePicker;
 
 public class MainActivity extends AppCompatActivity {
@@ -27,26 +27,39 @@ public class MainActivity extends AppCompatActivity {
         MaterialCardView mCard = findViewById(R.id.demo_card);
 
         mCard.setOnClickListener(v -> {
-            FilePicker.setPath(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).toString());
-            Intent intent = new Intent(this, FilePickerActivity.class);
-            startActivityForResult(intent, 0);
+            FilePicker filePicker = new FilePicker(filePickerResultLauncher, this);
+            filePicker.setAccentColor(Integer.MIN_VALUE);
+            filePicker.setExtension(null);
+            filePicker.setMultiFileMode(false, null);
+            filePicker.setPath(null, false);
+            filePicker.launch();
         });
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == 0 && data != null) {
-            File mSelectedFile = FilePicker.getSelectedFile();
-            new MaterialAlertDialogBuilder(this)
-                    .setMessage(getString(R.string.select_question, mSelectedFile.getName()))
-                    .setNegativeButton(getString(R.string.cancel), (dialogInterface, i) -> {
-                    })
-                    .setPositiveButton(getString(R.string.select), (dialogInterface, i) -> {
-                        // Do something
-                    }).show();
-        }
-    }
+    ActivityResultLauncher<Intent> filePickerResultLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getData() != null && (FilePicker.getSelectedFile() != null && FilePicker.getSelectedFile().exists() || FilePicker.getSelectedFilesList() != null)) {
+                    File mSelectedFile = null;
+                    StringBuilder sb = new StringBuilder();
+                    if (FilePicker.getSelectedFile() != null && FilePicker.getSelectedFile().exists()) {
+                        mSelectedFile = FilePicker.getSelectedFile();
+                        sb.append("1. ").append(mSelectedFile.getName());
+                    } else if (FilePicker.getSelectedFilesList() != null && FilePicker.getSelectedFilesList().get(0).exists()) {
+                        mSelectedFile = FilePicker.getSelectedFilesList().get(0);
+                        for (int i = 0; i < FilePicker.getSelectedFilesList().size(); i++ ) {
+                            sb.append(i + 1).append(" ").append(FilePicker.getSelectedFilesList().get(i).getName()).append("\n");
+                        }
+                    }
+                    if (mSelectedFile != null) {
+                        new MaterialAlertDialogBuilder(this)
+                                .setMessage(getString(R.string.selected_files_message,sb.toString()))
+                                .setPositiveButton(getString(R.string.cancel), (dialogInterface, i) -> {
+                                    // Do your task
+                                }).show();
+                    }
+                }
+            }
+    );
 
 }

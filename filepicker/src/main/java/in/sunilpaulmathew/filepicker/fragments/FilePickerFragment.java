@@ -1,12 +1,12 @@
 package in.sunilpaulmathew.filepicker.fragments;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.View;
@@ -27,9 +27,11 @@ import com.google.android.material.textview.MaterialTextView;
 
 import java.io.File;
 import java.util.Objects;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import in.sunilpaulmathew.filepicker.R;
-import in.sunilpaulmathew.filepicker.adapters.RecycleViewAdapter;
+import in.sunilpaulmathew.filepicker.adapters.FilePickerAdapter;
 import in.sunilpaulmathew.filepicker.utils.FilePicker;
 
 /*
@@ -39,7 +41,7 @@ public class FilePickerFragment extends Fragment {
 
     private MaterialTextView mTitle;
     private RecyclerView mRecyclerView;
-    private RecycleViewAdapter mRecycleViewAdapter;
+    private FilePickerAdapter mRecycleViewAdapter;
 
     @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     @Nullable
@@ -53,13 +55,17 @@ public class FilePickerFragment extends Fragment {
         FilePicker.initializeSelectCard(mRootView, R.id.select);
         mRecyclerView = mRootView.findViewById(R.id.recycler_view);
 
+        mTitle.setTextColor(FilePicker.getAccentColor(requireActivity()));
+        mBack.setColorFilter(FilePicker.getAccentColor(requireActivity()));
+        mSortButton.setColorFilter(FilePicker.getAccentColor(requireActivity()));
+
         mBack.setOnClickListener(v -> finish());
 
         if (!FilePicker.isInternalPath() && FilePicker.isPermissionDenied(requireActivity())) {
             LinearLayout mPermissionLayout = mRootView.findViewById(R.id.permission_layout);
             MaterialCardView mPermissionGrant = mRootView.findViewById(R.id.grant_card);
             MaterialTextView mPermissionText = mRootView.findViewById(R.id.permission_text);
-            mPermissionText.setText(getString(Build.VERSION.SDK_INT >= 30 ? R.string.file_permission_request_message
+            mPermissionText.setText(getString(Build.VERSION.SDK_INT >= 29 ? R.string.file_permission_request_message
                     : R.string.file_permission_request_message_legacy, FilePicker.getAppName(requireContext().getPackageName(),
                     requireActivity())));
             mPermissionText.setTextColor(FilePicker.isDarkTheme(requireActivity()) ? getResources().getColor(R.color.colorWhite) : getResources().getColor(R.color.colorBlack));
@@ -70,22 +76,23 @@ public class FilePickerFragment extends Fragment {
             mPermissionGrant.setOnClickListener(v -> FilePicker.requestPermission(requireActivity()));
         } else {
             mRecyclerView.setLayoutManager(new GridLayoutManager(requireActivity(), FilePicker.getOrientation(requireActivity()) == Configuration.ORIENTATION_LANDSCAPE ? 2 : 1));
-            mRecycleViewAdapter = new RecycleViewAdapter(FilePicker.getData(requireActivity()));
+            mRecycleViewAdapter = new FilePickerAdapter(FilePicker.getData(requireActivity()));
             mRecyclerView.setAdapter(mRecycleViewAdapter);
 
-            mTitle.setText(FilePicker.isStorageRoot() ? "Storage Root" : new File(FilePicker.getPath()).getName().toUpperCase());
+            mTitle.setText(FilePicker.isStorageRoot(requireActivity()) ? "Storage Root" : new File(FilePicker.getPath(requireActivity())).getName().toUpperCase());
 
             mRecycleViewAdapter.setOnItemClickListener((position, v) -> {
                 String mPath = FilePicker.getData(requireActivity()).get(position);
-                if (new File(mPath).isDirectory()) {
-                    FilePicker.setPath(mPath);
+                File mPathFile = new File(mPath);
+                if (mPathFile.isDirectory()) {
+                    FilePicker.saveString("path", mPath, requireActivity());
                     reload(requireActivity());
                 } else {
                     if (FilePicker.isMultiFileMode() && FilePicker.isSupportedMultiFile(mPath)) {
-                        if (FilePicker.getSelectedFilesList().contains(mPath)) {
-                            FilePicker.getSelectedFilesList().remove(mPath);
+                        if (FilePicker.getSelectedFilesList().contains(mPathFile)) {
+                            FilePicker.getSelectedFilesList().remove(mPathFile);
                         } else {
-                            FilePicker.getSelectedFilesList().add(mPath);
+                            FilePicker.getSelectedFilesList().add(mPathFile);
                         }
                         mRecycleViewAdapter.notifyItemChanged(position);
                         FilePicker.getSelectCard().setVisibility(FilePicker.getSelectedFilesList().isEmpty() ? View.GONE : View.VISIBLE);
@@ -122,10 +129,11 @@ public class FilePickerFragment extends Fragment {
             @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
             @Override
             public void handleOnBackPressed() {
-                if (FilePicker.isStorageRoot()) {
+                if (FilePicker.isStorageRoot(requireActivity())) {
                     finish();
                 } else {
-                    FilePicker.setPath(Objects.requireNonNull(new File(FilePicker.getPath()).getParentFile()).getPath());
+
+                    FilePicker.saveString("path", Objects.requireNonNull(new File(FilePicker.getPath(requireActivity())).getParentFile()).getPath(), requireActivity());
                     reload(requireActivity());
                 }
             }
@@ -135,32 +143,24 @@ public class FilePickerFragment extends Fragment {
     }
 
     private void finish() {
-        FilePicker.setExtension(null);
-        FilePicker.setPath(null);
         requireActivity().finish();
     }
 
-    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
-    @SuppressLint("StaticFieldLeak")
     private void reload(Activity activity) {
-        new AsyncTask<Void, Void, Void>() {
-            @Override
-            protected Void doInBackground(Void... voids) {
-                mRecycleViewAdapter = new RecycleViewAdapter(FilePicker.getData(activity));
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void aVoid) {
-                super.onPostExecute(aVoid);
-                mTitle.setText(FilePicker.isStorageRoot() ? "Storage Root" : new File(FilePicker.getPath()).getName().toUpperCase());
+        ExecutorService executors = Executors.newSingleThreadExecutor();
+        executors.execute(() -> {
+            mRecycleViewAdapter = new FilePickerAdapter(FilePicker.getData(activity));
+            new Handler(Looper.getMainLooper()).post(() -> {
+                mTitle.setText(FilePicker.isStorageRoot(requireActivity()) ? "Storage Root" : new File(
+                        FilePicker.getPath(requireActivity())).getName().toUpperCase());
                 mRecyclerView.setAdapter(mRecycleViewAdapter);
                 if (FilePicker.isMultiFileMode()) {
                     FilePicker.getSelectedFilesList().clear();
                     FilePicker.getSelectCard().setVisibility(View.GONE);
                 }
-            }
-        }.execute();
+                if (!executors.isShutdown()) executors.shutdown();
+            });
+        });
     }
     
 }

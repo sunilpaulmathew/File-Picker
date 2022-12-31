@@ -14,11 +14,14 @@ import android.os.Build;
 import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.TypedValue;
 import android.view.View;
 
+import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.widget.AppCompatImageButton;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 
 import com.google.android.material.card.MaterialCardView;
 
@@ -29,22 +32,31 @@ import java.util.List;
 import java.util.Objects;
 
 import in.sunilpaulmathew.filepicker.R;
+import in.sunilpaulmathew.filepicker.activities.FilePickerActivity;
 
 /*
  * Created by sunilpaulmathew <sunil.kde@gmail.com> on April 15, 2021
  */
 public class FilePicker {
 
+    private static ActivityResultLauncher<Intent> mResult = null;
+    private static int mAccentColor = Integer.MIN_VALUE;
+    public Context mContext;
     private static boolean mMultiFileMode = false, mInternalPath = false;
-    private static final List<String> mSelectedFiles = new ArrayList<>();
+    private static final List<File> mSelectedFiles = new ArrayList<>();
     private static MaterialCardView mSelectCard = null;
     private static String mExtension = null, mPath = null, mSelectedFileExtension = null, mSelectedFilePath = null;
+
+    public FilePicker(ActivityResultLauncher<Intent> result, Context context) {
+        mResult = result;
+        mContext = context;
+    }
 
     public static List<String> getData(Activity activity) {
         List<String> mData = new ArrayList<>(), mDir = new ArrayList<>(), mFiles = new ArrayList<>();
         try {
             // Add directories
-            for (File mFile : Objects.requireNonNull(new File(getPath()).listFiles())) {
+            for (File mFile : Objects.requireNonNull(new File(getPath(activity)).listFiles())) {
                 if (mFile.isDirectory()) {
                     mDir.add(mFile.getAbsolutePath());
                 }
@@ -55,7 +67,7 @@ public class FilePicker {
             }
             mData.addAll(mDir);
             // Add files
-            for (File mFile : Objects.requireNonNull(new File(getPath()).listFiles())) {
+            for (File mFile : Objects.requireNonNull(new File(getPath(activity)).listFiles())) {
                 if (mFile.isFile() && isSupportedFile(mFile.getAbsolutePath())) {
                     mFiles.add(mFile.getAbsolutePath());
                 }
@@ -86,30 +98,37 @@ public class FilePicker {
     }
 
     public static boolean isImageFile(String path) {
-        return getExtFromPath(path).equals(".bmp") || getExtFromPath(path).equals(".png") || getExtFromPath(path).equals(".jpg");
+        return path.endsWith(".bmp") || path.endsWith(".png") || path.endsWith(".jpg");
     }
 
     public static boolean isSupportedFile(String path) {
-        if (getExtension() == null) {
+        if (mExtension == null) {
             return true;
         } else {
-            return getExtFromPath(path).equals(getExtension());
+            if (!mExtension.startsWith(".")) {
+                mExtension = "." + mExtension;
+            }
+            return path.endsWith(mExtension);
         }
     }
 
     public static boolean isSupportedMultiFile(String path) {
-        if (getSelectedFileExtension() != null) {
-            return getExtFromPath(path).equals(getSelectedFileExtension());
+        if (mSelectedFileExtension == null) {
+            return true;
+        } else {
+            if (!mSelectedFileExtension.startsWith(".")) {
+                mSelectedFileExtension = "." + mSelectedFileExtension;
+            }
+            return path.endsWith(mSelectedFileExtension);
         }
-        return false;
     }
 
     public static boolean getBoolean(String name, boolean defaults, Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(name, defaults);
     }
 
-    public static boolean isStorageRoot() {
-        return getPath().equals(Environment.getExternalStorageDirectory().toString());
+    public static boolean isStorageRoot(Context context) {
+        return getPath(context).equals(Environment.getExternalStorageDirectory().toString());
     }
 
     public static boolean isMultiFileMode() {
@@ -138,8 +157,22 @@ public class FilePicker {
         }
     }
 
-    public static List<String> getSelectedFilesList() {
+    public static Drawable getDrawable(int drawable, Context context) {
+        return ContextCompat.getDrawable(context, drawable);
+    }
+
+    public static List<File> getSelectedFilesList() {
         return mSelectedFiles;
+    }
+
+    public static int getAccentColor(Context context) {
+        if (mAccentColor != Integer.MIN_VALUE) {
+            return mAccentColor;
+        } else {
+            TypedValue value = new TypedValue();
+            context.getTheme().resolveAttribute(R.attr.colorAccent, value, true);
+            return value.data;
+        }
     }
 
     public static int getOrientation(Activity activity) {
@@ -147,16 +180,14 @@ public class FilePicker {
                 Configuration.ORIENTATION_PORTRAIT : activity.getResources().getConfiguration().orientation;
     }
 
-    public static String getPath() {
-        if (mPath == null) {
-            return Environment.getExternalStorageDirectory().toString();
-        } else {
+    public static String getPath(Context context) {
+        if (new File(getString("path", Environment.getExternalStorageDirectory().toString(), context)).exists()) {
+            return getString("path", Environment.getExternalStorageDirectory().toString(), context);
+        } else if (mPath != null && new File(mPath).exists()) {
             return mPath;
+        } else {
+            return Environment.getExternalStorageDirectory().toString();
         }
-    }
-
-    public static String getExtension() {
-        return mExtension;
     }
 
     public static String getSelectedFileExtension() {
@@ -164,6 +195,9 @@ public class FilePicker {
     }
 
     public static File getSelectedFile() {
+        if (mSelectedFilePath == null) {
+            return null;
+        }
         return new File(mSelectedFilePath);
     }
 
@@ -177,8 +211,8 @@ public class FilePicker {
         }
     }
 
-    public static String getExtFromPath(String path) {
-        return android.webkit.MimeTypeMap.getFileExtensionFromUrl(path);
+    public static String getString(String name, String defaults, Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(name, defaults);
     }
 
     public static String getAppName(String packageName, Context context) {
@@ -215,38 +249,25 @@ public class FilePicker {
         PreferenceManager.getDefaultSharedPreferences(context).edit().putBoolean(name, value).apply();
     }
 
-    public static void setPath(String path) {
-        mPath = path;
-    }
-
-    public static void setExtension(String extension) {
-        mExtension = extension;
-    }
-
-    public static void setSelectedFileExtension(String extension) {
-        mSelectedFileExtension = extension;
-    }
-
-    public static void setMultiFileMode(boolean enabled) {
-        mMultiFileMode = enabled;
-    }
-
-    public static void isInternalPath(boolean enabled) {
-        mInternalPath = enabled;
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    public static void saveString(String name, String value, Context context) {
+        PreferenceManager.getDefaultSharedPreferences(context).edit().putString(name, value).apply();
     }
 
     public static void setSelectedFilePath(String path) {
         mSelectedFilePath = path;
     }
 
-    public static MaterialCardView initializeSelectCard(View view, int id) {
-        return mSelectCard = view.findViewById(id);
+    public static void initializeSelectCard(View view, int id) {
+        mSelectCard = view.findViewById(id);
+        mSelectCard.setCardBackgroundColor(getAccentColor(view.getContext()));
     }
 
     public static MaterialCardView getSelectCard() {
         return mSelectCard;
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.DONUT)
     public static void requestPermission(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             Intent intent = new Intent();
@@ -260,6 +281,31 @@ public class FilePicker {
                     Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
             activity.finish();
         }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
+    public void launch() {
+        saveString("path", mPath, mContext);
+        Intent intent = new Intent(mContext, FilePickerActivity.class);
+        mResult.launch(intent);
+    }
+
+    public void setAccentColor(int color) {
+        mAccentColor = color;
+    }
+
+    public void setExtension(String ext) {
+        mExtension = ext;
+    }
+
+    public void setMultiFileMode(boolean enabled, String ext) {
+        mMultiFileMode = enabled;
+        mSelectedFileExtension = ext;
+    }
+
+    public void setPath(String path, boolean internalPath) {
+        mPath = path;
+        mInternalPath = internalPath;
     }
 
 }

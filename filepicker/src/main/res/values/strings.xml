@@ -1,10 +1,8 @@
 <resources>
-    <string name="cancel">Cancel</string>
     <string name="file_permission_request_message">In order to get this feature working on newer Android versions (Android R or newer), it is necessary to grant \"All files access\" permission to \"%s\". Kindly grant the permission manually from the new screen opened after clicking the \"Grant\" button.</string>
     <string name="file_permission_request_message_legacy">In order to get this feature working, it is necessary to grant permission to access device storage to \"%s\". Kindly grant the permission after clicking the \"Grant\" button.</string>
     <string name="grant">Grant</string>
     <string name="please_note">Please Note</string>
     <string name="select">Select</string>
-    <string name="select_question">Select \'%s\'?</string>
     <string name="sort_order">A-Z</string>
 </resources>

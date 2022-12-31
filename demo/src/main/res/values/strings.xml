@@ -2,6 +2,5 @@
     <string name="app_name" translatable="false">File Picker Demo</string>
 
     <string name="cancel">Cancel</string>
-    <string name="select">Select</string>
-    <string name="select_question">Select \'%s\'?</string>
+    <string name="selected_files_message">The following file(s) are selected\n\n%s</string>
 </resources>
