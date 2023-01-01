@@ -99,7 +99,7 @@ public class FilePickerFragment extends Fragment {
                     } else {
                         Intent intent = new Intent();
                         FilePicker.setSelectedFilePath(mPath);
-                        requireActivity().setResult(0, intent);
+                        requireActivity().setResult(Activity.RESULT_OK, intent);
                         finish();
                     }
                 }
@@ -120,7 +120,7 @@ public class FilePickerFragment extends Fragment {
 
             FilePicker.getSelectCard().setOnClickListener(v -> {
                 Intent intent = new Intent();
-                requireActivity().setResult(0, intent);
+                requireActivity().setResult(Activity.RESULT_OK, intent);
                 finish();
             });
         }

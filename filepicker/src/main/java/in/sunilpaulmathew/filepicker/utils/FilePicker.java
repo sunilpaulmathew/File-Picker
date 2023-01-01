@@ -43,7 +43,7 @@ public class FilePicker {
     private static int mAccentColor = Integer.MIN_VALUE;
     public Context mContext;
     private static boolean mMultiFileMode = false, mInternalPath = false;
-    private static final List<File> mSelectedFiles = new ArrayList<>();
+    private static List<File> mSelectedFiles = new ArrayList<>();
     private static MaterialCardView mSelectCard = null;
     private static String mExtension = null, mPath = null, mSelectedFileExtension = null, mSelectedFilePath = null;
 
@@ -286,6 +286,8 @@ public class FilePicker {
     @RequiresApi(api = Build.VERSION_CODES.GINGERBREAD)
     public void launch() {
         saveString("path", mPath, mContext);
+        mSelectedFilePath = null;
+        mSelectedFiles = new ArrayList<>();
         Intent intent = new Intent(mContext, FilePickerActivity.class);
         mResult.launch(intent);
     }

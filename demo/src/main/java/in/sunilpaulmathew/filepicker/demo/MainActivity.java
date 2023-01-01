@@ -1,5 +1,6 @@
 package in.sunilpaulmathew.filepicker.demo;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -39,7 +40,8 @@ public class MainActivity extends AppCompatActivity {
     ActivityResultLauncher<Intent> filePickerResultLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getData() != null && (FilePicker.getSelectedFile() != null && FilePicker.getSelectedFile().exists() || FilePicker.getSelectedFilesList() != null)) {
+                if (result.getResultCode() == Activity.RESULT_OK && result.getData() != null && (FilePicker.getSelectedFile() != null
+                        && FilePicker.getSelectedFile().exists() || FilePicker.getSelectedFilesList() != null)) {
                     File mSelectedFile = null;
                     StringBuilder sb = new StringBuilder();
                     if (FilePicker.getSelectedFile() != null && FilePicker.getSelectedFile().exists()) {
